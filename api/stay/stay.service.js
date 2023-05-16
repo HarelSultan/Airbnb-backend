@@ -49,8 +49,9 @@ async function getUserStays(staysId) {
 async function add(stay) {
     try {
         const collection = await dbService.getCollection('stay')
-        await collection.insertOne(stay)
-        return stay
+        const res = await collection.insertOne(stay)
+        const addedStay = res.ops[0]
+        return addedStay
     } catch (err) {
         logger.error('cannot insert stay', err)
         throw err
@@ -59,6 +60,7 @@ async function add(stay) {
 
 async function update(stay) {
     try {
+        const collection = await dbService.getCollection('stay')
         const stayToSave = {
             name: stay.name,
             type: stay.type,
@@ -86,7 +88,6 @@ async function update(stay) {
                 bathrooms: stay.stayDetails.bathrooms,
             },
         }
-        const collection = await dbService.getCollection('stay')
         await collection.updateOne({ _id: ObjectId(stay._id) }, { $set: stayToSave })
         return stay
     } catch (err) {
@@ -95,23 +96,71 @@ async function update(stay) {
     }
 }
 
+async function addReservation(reservation) {
+    try {
+        const collection = await dbService.getCollection('stay')
+        const reservationToAdd = {
+            _id: reservation._id,
+            dates: reservation.reservationDates,
+        }
+        await collection.updateOne(
+            { _id: ObjectId(reservation.stayId) },
+            { $addToSet: { reservations: reservationToAdd } }
+        )
+    } catch (err) {
+        logger.error(`Cannot add reservation ${reservation._id} to stay ${reservation.stayId} with error:`, err)
+        throw err
+    }
+}
+
+async function updateStays(listingsId, demoReservations) {
+    try {
+        const collection = await dbService.getCollection('stay')
+        const bulkUpdateOperations = listingsId.map(listingId => {
+            const updatedField = {
+                reservations: demoReservations
+                    .filter(reservation => reservation.stayId.toString() === listingId.toString())
+                    .map(reservation => ({
+                        _id: reservation._id,
+                        dates: reservation.reservationDates,
+                    })),
+            }
+            return {
+                updateOne: {
+                    filter: { _id: ObjectId(listingId) },
+                    update: { $set: updatedField },
+                },
+            }
+        })
+        await collection.bulkWrite(bulkUpdateOperations)
+    } catch (err) {
+        logger.error('Cannot update stays', err)
+        throw err
+    }
+}
+
 function _getCriteria(filterBy, searchBy) {
     const criteria = {}
     if (filterBy.label && filterBy.label !== DEFAULT_LABEL) {
-        criteria.label = { $in: filterBy.label }
+        criteria.labels = { $regex: filterBy.label, $options: 'i' }
     }
+
     if (+filterBy.minPrice) {
         criteria.price = { $gt: +filterBy.minPrice }
     }
+
     if (+filterBy.maxPrice) {
         criteria.price.$lt = +filterBy.maxPrice
     }
+
     if (filterBy.type) {
         criteria.type = { $in: filterBy.type }
     }
+
     if (searchBy.destination && searchBy.destination !== DEFAULT_DESTINATION) {
         criteria['loc.destination'] = searchBy.destination
     }
+
     if (searchBy.checkIn && searchBy.checkOut) {
         criteria.reservations = {
             $not: {
@@ -138,4 +187,5 @@ module.exports = {
     add,
     update,
     addReservation,
+    updateStays,
 }

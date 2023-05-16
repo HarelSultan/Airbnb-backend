@@ -44,7 +44,7 @@ async function addStay(req, res) {
     console.log(loggedinUser)
     try {
         const stay = req.body
-        stay.host = loggedinUser
+        delete stay._id
         const addedStay = await stayService.add(stay)
         res.json(addedStay)
     } catch (err) {

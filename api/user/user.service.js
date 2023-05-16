@@ -9,6 +9,7 @@ module.exports = {
     update,
     add,
     addTrip,
+    updateUsers,
 }
 
 async function query() {
@@ -67,6 +68,22 @@ async function update(user) {
     }
 }
 
+async function addTrip(userId, tripId) {
+    try {
+        const collection = await dbService.getCollection('user')
+        const res = await collection.findOneAndUpdate(
+            { _id: ObjectId(userId) },
+            { $push: { tripsId: tripId } },
+            { returnOriginal: false }
+        )
+        const updatedUser = res.value
+        delete updatedUser.password
+        return updatedUser
+    } catch (err) {
+        logger.error(`Cannot add trip ${tripId} to user ${userId} with error:`, err)
+    }
+}
+
 async function add(user) {
     try {
         // peek only updatable fields!
@@ -84,6 +101,30 @@ async function add(user) {
         return userToAdd
     } catch (err) {
         logger.error('cannot add user', err)
+        throw err
+    }
+}
+
+async function updateUsers(demoGuestsCredentials, demoReservations) {
+    try {
+        const collection = await dbService.getCollection('user')
+        const bulkUpdateOperations = demoGuestsCredentials.map(guest => {
+            const guestId = guest._id
+            const updatedField = {
+                tripsId: demoReservations
+                    .filter(reservation => reservation.guestId === guestId)
+                    .map(reservation => reservation._id),
+            }
+            return {
+                updateOne: {
+                    filter: { _id: ObjectId(guestId) },
+                    update: { $set: updatedField },
+                },
+            }
+        })
+        await collection.bulkWrite(bulkUpdateOperations)
+    } catch (err) {
+        logger.error('Cannot update users', err)
         throw err
     }
 }
