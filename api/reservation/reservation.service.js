@@ -3,10 +3,10 @@ const logger = require('../../services/logger.service')
 const utilService = require('../../services/util.service')
 const ObjectId = require('mongodb').ObjectId
 
-async function query(reservationsId) {
+async function query(criteria) {
     try {
         const collection = await dbService.getCollection('reservation')
-        const reservations = await collection.find({ _id: { $in: reservationsId } }).toArray()
+        const reservations = await collection.find(criteria).toArray()
         return reservations
     } catch (err) {
         logger.error('cannot find reservations', err)
@@ -28,7 +28,6 @@ async function add(loggedInUser, reservation) {
     try {
         const collection = await dbService.getCollection('reservation')
         const addedReservation = await collection.insertOne(reservation)
-        console.log('ADDED RESERVATION:', addedReservation.ops[0])
         return addedReservation.ops[0]
     } catch (err) {
         logger.error('cannot insert reservation', err)
@@ -41,7 +40,7 @@ async function update(reservation) {
         const reservationToSave = {
             status: reservation.status,
         }
-        const collection = await dbService.getCollection('stay')
+        const collection = await dbService.getCollection('reservation')
         await collection.updateOne({ _id: ObjectId(reservation._id) }, { $set: reservationToSave })
         return reservation
     } catch (err) {
@@ -55,5 +54,4 @@ module.exports = {
     getById,
     add,
     update,
-    addDemoReservations,
 }

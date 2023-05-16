@@ -8,11 +8,24 @@ async function getReservations(req, res) {
     try {
         let { reservationsId } = req.query
         reservationsId = reservationsId.map(reservationId => ObjectId(reservationId))
-        const users = await reservationService.query(reservationsId)
-        res.send(users)
+        const criteria = { _id: { $in: reservationsId } }
+        const reservations = await reservationService.query(criteria)
+        res.send(reservations)
     } catch (err) {
-        logger.error('Failed to get users', err)
-        res.status(500).send({ err: 'Failed to get users' })
+        logger.error('Failed to get reservations', err)
+        res.status(500).send({ err: 'Failed to get reservations' })
+    }
+}
+
+async function getHostReservations(req, res) {
+    try {
+        const { hostId } = req.query
+        const criteria = { 'host._id': hostId }
+        const reservations = await reservationService.query(criteria)
+        res.send(reservations)
+    } catch (err) {
+        logger.error('Failed to get host reservations', err)
+        res.status(500).send({ err: 'Failed to get host reservations' })
     }
 }
 
@@ -29,7 +42,6 @@ async function getReservation(req, res) {
 async function addReservation(req, res) {
     try {
         const { loggedinUser } = req
-        console.log('LOGGED IN USER@@@@@@@@@', loggedinUser)
         const reservation = req.body
         const addedReservation = await reservationService.add(loggedinUser, reservation)
         await stayService.addReservation(addedReservation)
@@ -55,6 +67,7 @@ async function updateReservation(req, res) {
 module.exports = {
     getReservation,
     getReservations,
+    getHostReservations,
     addReservation,
     updateReservation,
 }
