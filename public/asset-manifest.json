@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "/static/css/main.c2598eea.css",
+    "main.js": "/static/js/main.9652d641.js",
+    "static/media/Cereal-Medium.ttf": "/static/media/Cereal-Medium.ae01f3875c40f5fd6c2c.ttf",
+    "static/media/Cereal-Bold.ttf": "/static/media/Cereal-Bold.2c4dcd58965a1de936c0.ttf",
+    "static/media/Cereal-Book.ttf": "/static/media/Cereal-Book.0c8823bcf9f4ea24198a.ttf",
+    "static/media/flexible.jpg": "/static/media/flexible.ea4bee9a8ae36c0e3395.jpg",
+    "static/media/france.webp": "/static/media/france.b75cf05b38e6bae34c31.webp",
+    "static/media/united-states.webp": "/static/media/united-states.b75cf05b38e6bae34c31.webp",
+    "static/media/middle-east.webp": "/static/media/middle-east.66e5650f59846b5842fe.webp",
+    "static/media/italy.webp": "/static/media/italy.b00d91b4b8afceaa4985.webp",
+    "static/media/south-america.webp": "/static/media/south-america.3f32b3945318eb0dbede.webp",
+    "index.html": "/index.html",
+    "main.c2598eea.css.map": "/static/css/main.c2598eea.css.map",
+    "main.9652d641.js.map": "/static/js/main.9652d641.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c2598eea.css",
+    "static/js/main.9652d641.js"
+  ]
+}
