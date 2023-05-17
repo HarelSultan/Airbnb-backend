@@ -23,6 +23,14 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+function getNightsCount(reservationDates) {
+    const { checkIn, checkOut } = reservationDates
+    const checkInTime = checkIn.getTime()
+    const checkOutTime = checkOut.getTime()
+    const diff = checkOutTime - checkInTime
+    return Math.round(diff / (1000 * 60 * 60 * 24))
+}
+
 function getRandomDates(takenDates) {
     const checkIn = new Date()
     checkIn.setDate(checkIn.getDate() + getRandomInt(0, 120))
@@ -55,9 +63,17 @@ function isDateRangeTaken(takenDates, requestedDates) {
     })
 }
 
+function getRandomPastDate() {
+    const randomPastDate = new Date()
+    randomPastDate.setDate(randomPastDate.getDate() - getRandomInt(1, 15))
+    return randomPastDate
+}
+
 module.exports = {
     makeId,
     getRandomInt,
     debounce,
     getRandomDates,
+    getRandomPastDate,
+    getNightsCount,
 }

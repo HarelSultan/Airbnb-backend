@@ -35,6 +35,58 @@ async function add(loggedInUser, reservation) {
     }
 }
 
+async function addDemoReservations(demoUserListings, demoGuestsCredentials) {
+    try {
+        const collection = await dbService.getCollection('reservation')
+        const demoReservations = demoUserListings.flatMap(listing => {
+            const listingReservations = []
+            while (listingReservations.length < 2) {
+                const guest = Math.random() > 0.5 ? demoGuestsCredentials[0] : demoGuestsCredentials[1]
+                const randomPastDate = utilService.getRandomPastDate()
+                // Getting the dates that are already taken in order to prevent duplicated dates.
+                const listingTakenDates = listingReservations.length
+                    ? listingReservations.map(reservation => reservation.reservationDates)
+                    : []
+                const reservationDates = utilService.getRandomDates(listingTakenDates)
+                const nightsCount = utilService.getNightsCount(reservationDates)
+                const totalPayout = listing.price * nightsCount
+                const reservation = {
+                    stayId: listing._id,
+                    stayName: listing.name,
+                    stayLocation: {
+                        city: listing.loc.city,
+                        lat: listing.loc.lat,
+                        lng: listing.loc.lng,
+                    },
+                    stayImgsUrl: listing.imgUrls,
+                    host: listing.host,
+                    guestId: guest._id,
+                    guestName: guest.name,
+                    reservationDates,
+                    bookedAt: randomPastDate,
+                    totalPayout,
+                    guests: {
+                        adults: 2,
+                        children: 1,
+                        infants: 1,
+                        pets: 1,
+                    },
+                    status: 'pending',
+                }
+                listingReservations.push(reservation)
+            }
+            // return reservation
+            return listingReservations
+        })
+        const reservations = await collection.insertMany(demoReservations)
+        console.log('DEMO RESERVATIONS@@@@@@@@@@@', reservations)
+        return reservations.ops
+    } catch (err) {
+        logger.error('Cannot add demo reservations with error:', err)
+        throw err
+    }
+}
+
 async function update(reservation) {
     try {
         const reservationToSave = {
@@ -54,4 +106,5 @@ module.exports = {
     getById,
     add,
     update,
+    addDemoReservations,
 }

@@ -1,5 +1,9 @@
 const authService = require('./auth.service')
+const stayService = require('../stay/stay.service')
+const userService = require('../user/user.service')
+const reservationService = require('../reservation/reservation.service')
 const logger = require('../../services/logger.service')
+const ObjectId = require('mongodb').ObjectId
 
 async function login(req, res) {
     const { username, password } = req.body
